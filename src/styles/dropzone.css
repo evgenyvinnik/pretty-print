@@ -1,0 +1,23 @@
+.dropzone-container.invalid {
+  border: 1px solid red;
+}
+.dropzone-container .dropzone {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  text-align: center;
+  color: transparent;
+  font-size: 40px;
+  text-shadow: 1px 1px 0.08px rgba(0, 0, 0, 0.1);
+}
+.dropzone-container .dropzone .uploadBtn {
+  z-index: 5;
+  padding: 10px;
+  background-color: #22afb4;
+  color: white;
+  border: none;
+  cursor: pointer;
+}

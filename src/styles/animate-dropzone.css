@@ -1,0 +1,124 @@
+.dropzone-container {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  min-height: 320px;
+  position: relative;
+}
+.dropzone-container .topbottom, .dropzone-container .leftright {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+.dropzone-container .leftright:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  right: 2px;
+  height: 100%;
+  width: 2px;
+  background-image: linear-gradient(to top, #7f7f7f 70%, rgba(255, 255, 255, 0) 0%);
+  background-position: bottom;
+  background-size: 2px 11px;
+  background-repeat: repeat-y;
+ /*background-color:red;
+ */
+}
+.dropzone-container .leftright:before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  top: 0;
+  right: 0px;
+  height: 100%;
+  width: 2px;
+  background-image: linear-gradient(to top, #7f7f7f 70%, rgba(255, 255, 255, 0) 0%);
+  background-position: bottom;
+  background-size: 2px 11px;
+  background-repeat: repeat-y;
+ /*background-color:red;
+ */
+}
+.dropzone-container .topbottom:before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  width: 100%;
+  background-image: linear-gradient(to right, #7f7f7f 71%, rgba(255, 255, 255, 0) 0%);
+  background-position: bottom;
+  background-size: 11px 2px;
+  background-repeat: repeat-x;
+ /* background-color:red;
+  */
+}
+.dropzone-container .topbottom:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  width: 100%;
+  background-image: linear-gradient(to right, #7f7f7f 71%, rgba(255, 255, 255, 0) 0%);
+  background-position: top;
+  background-size: 11px 2px;
+  background-repeat: repeat-x;
+ /* background-color:red;
+  */
+}
+.dropzone-container:hover .leftright:after, .dropzone-container.drag-active .leftright:after {
+  animation: move-left 1s linear infinite;
+}
+.dropzone-container:hover .leftright:before, .dropzone-container.drag-active .leftright:before {
+  animation: move-right 1s linear infinite;
+}
+.dropzone-container:hover .leftright:after, .dropzone-container.drag-active .leftright:after, .dropzone-container:hover .leftright:before, .dropzone-container.drag-active .leftright:before {
+  background-image: linear-gradient(to top, #0079b8 70%, rgba(255, 255, 255, 0) 0%);
+}
+.dropzone-container:hover .topbottom:after, .dropzone-container.drag-active .topbottom:after {
+  animation: move-top 1s linear infinite;
+}
+.dropzone-container:hover .topbottom:before, .dropzone-container.drag-active .topbottom:before {
+  animation: move-bottom 1s linear infinite;
+}
+.dropzone-container:hover .topbottom:after, .dropzone-container.drag-active .topbottom:after, .dropzone-container:hover .topbottom:before, .dropzone-container.drag-active .topbottom:before {
+  background-image: linear-gradient(to right, #0079b8 70%, rgba(255, 255, 255, 0) 0%);
+}
+@keyframes move-top {
+  0% {
+    background-position: 0 0;
+ }
+  100% {
+    background-position: 10px 0px;
+ }
+}
+@keyframes move-bottom {
+  0% {
+    background-position: 0 0;
+ }
+  100% {
+    background-position: -10px 0px;
+ }
+}
+@keyframes move-left {
+  0% {
+    background-position: 0 0;
+ }
+  100% {
+    background-position: 0px -10px;
+ }
+}
+@keyframes move-right {
+  0% {
+    background-position: 0 0;
+ }
+  100% {
+    background-position: 0px 10px;
+ }
+}
