@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/pretty-print/static/css/main.3bc32118.css",
+    "main.js": "/pretty-print/static/js/main.e0ea51f5.js",
+    "index.html": "/pretty-print/index.html",
+    "main.3bc32118.css.map": "/pretty-print/static/css/main.3bc32118.css.map",
+    "main.e0ea51f5.js.map": "/pretty-print/static/js/main.e0ea51f5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.3bc32118.css",
+    "static/js/main.e0ea51f5.js"
+  ]
+}
