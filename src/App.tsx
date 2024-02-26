@@ -114,7 +114,6 @@ function App() {
 
       while (attempts < maxAttempts) {
         ctx.font = `${sizeFont}px Courier`;
-        //  ctx.font = `8px Courier`;
         ctx.fillStyle = "#F00";
         let metrics = ctx.measureText("A");
         const letterHeight =
