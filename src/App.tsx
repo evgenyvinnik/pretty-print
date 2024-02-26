@@ -1,5 +1,5 @@
 import "./styles/App.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import { AppBar, Toolbar } from "@mui/material";
@@ -8,13 +8,29 @@ import Button from "@mui/material/Button";
 import { isStringNullOrWhitespaceOnly } from "./utils";
 import Divider from "@mui/material/Divider";
 import { DropZone } from "./DropZone";
+import Snackbar from "@mui/material/Snackbar";
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
-  const [text, setText] = useState<string[]>([]);
+  const [text, setText] = useState<string>("");
   const canvasRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const handleClose = (
+    _event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
 
-  useEffect(() => {
+    setOpen(false);
+  };
+
+  const HEIGHT = 1000;
+  const WIDTH = 1000;
+
+  const printImage = useCallback(() => {
     if (file != null) {
       let reader = new FileReader();
 
@@ -29,6 +45,8 @@ function App() {
               const ctx = (canvas as any).getContext("2d", {
                 willReadFrequently: true,
               });
+              ctx.fillStyle = "#FFF";
+              ctx.fillRect(0, 0, (canvas as any).width, (canvas as any).height);
               var scale = Math.min(
                 ctx.canvas.width / img.width,
                 ctx.canvas.height / img.height
@@ -52,67 +70,122 @@ function App() {
     }
   }, [file]);
 
+  useEffect(() => {
+    printImage();
+  }, [file, printImage]);
+
   const whiteLimit = 230;
-  const printCode = (code: string[], ctx: any) => {
-    ctx.font = "16px Courier";
-    ctx.fillStyle = "#FFF";
-    let metrics = ctx.measureText("A");
-    const letterHeight =
-      metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
-    const letterWidth = 0; //metrics.width;
-    const split = 0;
+  const printCode = (text: string) => {
+    if (file == null) {
+      setMessage("No image attached");
+      setOpen(true);
+      return;
+    }
+    // printImage();
+    const canvas = canvasRef.current;
+    if (canvas != null) {
+      const ctx = (canvas as any).getContext("2d", {
+        willReadFrequently: true,
+      });
+      const code = text
+        .replace(/\x28/g, " ( ")
+        .replace(/\x29/g, " ) ")
+        .replace(/{/g, " { ")
+        .replace(/}/g, " } ")
+        .replace(/\./g, " . ")
+        .replace(/\[/g, " ] ")
+        .replace(/\]/g, " [ ")
+        .replace(/\|/g, " | ")
+        .replace(/=/g, " = ")
+        .replace(/\t|\r|\n/g, "\u00a0")
+        .replace(/ +/g, "\u00a0")
+        .split("\u00a0");
 
-    let codeWord = 0;
-    let x = 0;
-    let y = 0;
-    let width = ctx.canvas.width;
-    let height = ctx.canvas.height;
-    let i = 0;
-    let j = 0;
+      if (code.length === 0) {
+        setMessage("Enter code");
+        setOpen(true);
+      }
 
-    while (i < height) {
-      j = 0;
-      let wordHeight = 0;
-      let wordSplit = 0;
-      while (j < width) {
-        const pixel = ctx.getImageData(i, j, 1, 1);
-        const data = pixel.data;
-        let wordLength = 0;
-        let wordGap = 0;
+      let list = [];
 
-        if (
-          data[0] < whiteLimit ||
-          data[1] < whiteLimit ||
-          data[2] < whiteLimit
-        ) {
-          let text = code[codeWord];
-          if (!isStringNullOrWhitespaceOnly(text)) {
-            let m = ctx.measureText(text);
-            wordLength = m.width;
+      let attempts = 0;
+      let sizeFont = 18;
+      const maxAttempts = 15;
 
-            wordHeight = letterHeight;
-            wordSplit = split;
+      while (attempts < maxAttempts) {
+        ctx.font = `${sizeFont}px Courier`;
+        //  ctx.font = `8px Courier`;
+        ctx.fillStyle = "#F00";
+        let metrics = ctx.measureText("A");
+        const letterHeight =
+          metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+        const letterWidth = metrics.width;
+        const split = 2;
 
-            wordGap = letterWidth;
+        let codeWord = 0;
+        let width = ctx.canvas.width;
+        let height = ctx.canvas.height;
+        let i = 0;
+        let j = 0;
 
-            x = j;
-            y = i;
-            ctx.fillText(text, x, y);
+        while (i < height) {
+          j = 0;
+          let wordHeight = 0;
+          let wordSplit = 0;
+          while (j < width) {
+            const pixel = ctx.getImageData(j, i, 1, 1);
+            const data = pixel.data;
+            let wordLength = 0;
+            let wordGap = 0;
+
+            if (
+              data[0] < whiteLimit ||
+              data[1] < whiteLimit ||
+              data[2] < whiteLimit
+            ) {
+              let text = code[codeWord];
+              if (!isStringNullOrWhitespaceOnly(text)) {
+                let m = ctx.measureText(text);
+                wordLength = m.width;
+
+                wordHeight = letterHeight;
+                wordSplit = split;
+
+                wordGap = letterWidth;
+
+                list.push({ text: text, x: j, y: i + wordHeight });
+                //ctx.fillText(text, j, i + wordHeight);
+              }
+
+              codeWord++;
+            }
+
+            j += 1 + wordLength + wordGap;
+            if (codeWord === text.length) {
+              break;
+            }
           }
 
-          codeWord++;
+          i += 1 + wordHeight + wordSplit;
+          if (codeWord === text.length) {
+            break;
+          }
         }
-
-        j += 1 + wordLength + wordGap;
-        if (codeWord === text.length) {
-          break;
+        attempts++;
+        if (codeWord !== text.length) {
+          setMessage(
+            `Attempt ${attempts}: Font too large, reduce to ${sizeFont}`
+          );
+          setOpen(true);
+          sizeFont--;
+          if (attempts !== maxAttempts) {
+            list = [];
+          }
         }
       }
-
-      i += 1 + wordHeight + wordSplit;
-      if (codeWord === text.length) {
-        break;
-      }
+      list.forEach((textElement) => {
+        ctx.fillText(textElement.text, textElement.x, textElement.y);
+      });
     }
   };
 
@@ -133,12 +206,7 @@ function App() {
             rows={13}
             value={text}
             onChange={(event) => {
-              setText(
-                event.target.value
-                  .replace(/\n/g, "")
-                  .replace(/ +/g, "\u00a0")
-                  .split("\u00a0")
-              );
+              setText(event.target.value);
             }}
           />
           <Divider orientation="vertical" variant="middle" flexItem>
@@ -157,24 +225,32 @@ function App() {
             className="generate-button"
             variant="contained"
             onClick={() => {
-              const canvas = canvasRef.current;
-              if (canvas != null) {
-                const ctx = (canvas as any).getContext("2d", {
-                  willReadFrequently: true,
-                });
-                printCode(text, ctx);
-              }
+              printCode(text);
             }}
           >
             Print Code
+          </Button>
+          <Button
+            sx={{ mt: 1, mx: 1 }}
+            className="generate-button"
+            variant="contained"
+            onClick={printImage}
+          >
+            Erase printed code
           </Button>
         </Box>
         <canvas
           id="imageCanvas"
           ref={canvasRef}
-          width="1000"
-          height="1000"
+          width={`${WIDTH}`}
+          height={`${HEIGHT}`}
         ></canvas>
+        <Snackbar
+          open={open}
+          autoHideDuration={3000}
+          onClose={handleClose}
+          message={message}
+        />
       </Container>
     </div>
   );
